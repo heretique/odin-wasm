@@ -32,7 +32,7 @@ candy_random_rotation_speed :: proc() -> vec3 {
 	return {rand.float32_range(-1, 1), rand.float32_range(-1, 1), rand.float32_range(-1, 1)}
 }
 candy_random_translation :: proc() -> vec3 {
-	RADIUS :: 260
+	RADIUS :: 400
 	return {rand.float32_range(-RADIUS, RADIUS), rand.float32_range(-RADIUS, RADIUS), rand.float32_range(-RADIUS, RADIUS)}
 }
 
@@ -109,33 +109,30 @@ setup_candy :: proc(s: ^State_Candy, program: gl.Program) {
 	/*
 	Objects
 	*/
-	s.objects = make([]Object, 60)
+	s.objects = make([]Object, 8000)
 
 	oi := 0
-	for &o in s.objects[oi:oi+20] {
-		o.shape          = cube_shape
-		o.translation    = candy_random_translation()
-		o.rotation_speed = candy_random_rotation_speed()
-		o.scale          = rand.float32_range(30, 60)
-		o.u_color_mult   = rgba_to_vec4(rand_color())
-	}
-	oi += 20
-
-	for &o in s.objects[oi:oi+20] {
-		o.shape          = pyramid_shape
-		o.translation    = candy_random_translation()
-		o.rotation_speed = candy_random_rotation_speed()
-		o.scale          = rand.float32_range(30, 60)
-		o.u_color_mult   = rgba_to_vec4(rand_color())
-	}
-	oi += 20
-
-	for &o in s.objects[oi:oi+20] {
-		o.shape          = sphere_shape
-		o.translation    = candy_random_translation()
-		o.rotation_speed = candy_random_rotation_speed()
-		o.scale          = rand.float32_range(20, 40)
-		o.u_color_mult   = rgba_to_vec4(rand_color())
+	for &o in s.objects {
+		if(oi % 3 == 0) {
+			o.shape          = cube_shape
+			o.translation    = candy_random_translation()
+			o.rotation_speed = candy_random_rotation_speed()
+			o.scale          = rand.float32_range(30, 60)
+			o.u_color_mult   = rgba_to_vec4(rand_color())
+		} else if(oi % 3 == 1) {
+			o.shape          = pyramid_shape
+			o.translation    = candy_random_translation()
+			o.rotation_speed = candy_random_rotation_speed()
+			o.scale          = rand.float32_range(30, 60)
+			o.u_color_mult   = rgba_to_vec4(rand_color())
+		} else {
+			o.shape          = sphere_shape
+			o.translation    = candy_random_translation()
+			o.rotation_speed = candy_random_rotation_speed()
+			o.scale          = rand.float32_range(20, 40)
+			o.u_color_mult   = rgba_to_vec4(rand_color())
+		}
+		oi += 1
 	}
 
 	/* Init rotation */

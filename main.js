@@ -52,7 +52,7 @@ const ODIN_ARGS_DEV    = [
 	"-use-separate-modules",
 ]
 /** @type {string[]} */
-const ODIN_ARGS_RELESE = [
+const ODIN_ARGS_RELEASE = [
 	...ODIN_ARGS_VET,
 	"-o:aggressive",
 	"-disable-assert",
@@ -411,7 +411,7 @@ async function build_wasm(is_dev) {
 	const start = performance.now()
 
 	const child = exec(
-		ODIN_ARGS_SHARED.concat(is_dev ? ODIN_ARGS_DEV : ODIN_ARGS_RELESE),
+		ODIN_ARGS_SHARED.concat(is_dev ? ODIN_ARGS_DEV : ODIN_ARGS_RELEASE),
 		{cwd: dirname},
 	)
 

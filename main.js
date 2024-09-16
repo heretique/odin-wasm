@@ -51,11 +51,12 @@ const ODIN_ARGS_SHARED = [
 ]
 /** @type {string[]} */
 const ODIN_ARGS_DEV    = [
+	"-debug",
 	"-o:none",
 	"-use-separate-modules",
 ]
 /** @type {string[]} */
-const ODIN_ARGS_RELESE = [
+const ODIN_ARGS_RELEASE = [
 	...ODIN_ARGS_VET,
 	"-o:aggressive",
 	"-disable-assert",
@@ -329,7 +330,7 @@ async function build_shdc() {
 async function build_wasm(is_dev) {
 	const start = performance.now()
 
-	const args = ODIN_ARGS_SHARED.concat(is_dev ? ODIN_ARGS_DEV : ODIN_ARGS_RELESE)
+	const args = ODIN_ARGS_SHARED.concat(is_dev ? ODIN_ARGS_DEV : ODIN_ARGS_RELEASE)
 
 	const child = child_process.execFile("odin", args, {cwd: dirname})
 	child.stderr?.on("data", data => {

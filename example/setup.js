@@ -95,11 +95,13 @@ Wasm instance
  * @property {Example_Start           } start
  * @property {Example_Frame           } frame
  * @property {Example_On_Window_Resize} on_window_resize
+ * @property {Example_End             } end
  *
  * @typedef {wasm.OdinExports & Example_Exports} Wasm_Exports
  *
  * @callback Example_Start
  * @param   {Example_Kind} example_type
+ * @param   {wasm.bool   } is_dev
  * @param   {wasm.rawptr } ctx
  * @returns {wasm.bool   }
  *
@@ -117,6 +119,11 @@ Wasm instance
  * @param   {wasm.f32}    canvas_y
  * @param   {wasm.rawptr} ctx
  * @returns {void}
+ * 
+ * @callback Example_End
+ * @param   {wasm.bool   } is_dev
+ * @param   {wasm.rawptr } ctx
+ * @returns {void        }
  */
 
 const wasm_state  = wasm.makeWasmState()
@@ -149,7 +156,7 @@ const odin_ctx = exports.default_context_ptr()
 /* _end() should be called when the program is done */
 // exports._end()
 
-const ok = exports.start(example_kind, odin_ctx)
+const ok = exports.start(example_kind, IS_DEV, odin_ctx)
 if (!ok) throw Error("Failed to start example")
 
 void requestAnimationFrame(prev_time => {
@@ -189,3 +196,8 @@ function updateCanvasSize() {
 }
 updateCanvasSize()
 window.addEventListener("resize", updateCanvasSize)
+window.addEventListener("close", () => {
+	console.log("Closing...")
+	exports.end(IS_DEV, odin_ctx)
+	exports._end()
+})

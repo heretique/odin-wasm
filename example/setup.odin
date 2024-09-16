@@ -25,24 +25,40 @@ aspect_ratio: f32
 
 scale: f32 = 0.5
 
+tracking_allocator: mem.Tracking_Allocator
+
 on_mouse_move :: proc (e: dom.Event) {
 	mouse_abs = cast_vec2(e.mouse.client)
 	mouse_pos = mouse_abs - canvas_pos
 	mouse_rel = rvec2((mouse_pos - window_size / 2) / window_size)
 }
+
 on_mouse_down :: proc (e: dom.Event) {
 	mouse_down_time_prev = mouse_down_time
 	mouse_down_time      = e.timestamp
 	mouse_down       = true
 	mouse_down_frame = true
 }
+
 on_mouse_up :: proc (e: dom.Event) {
 	mouse_down = false
 }
+
 on_wheel :: proc (e: dom.Event) {
 	scale -= f32(e.wheel.delta.y) * 0.001
 	scale = clamp(scale, 0, 1)
 }
+
+reset_tracking_allocator :: proc (a: ^mem.Tracking_Allocator)->bool {
+	err := false
+	for _, value in a.allocation_map {
+		fmt.eprintfln("%v: Leaked %v bytes", value.location, value.size)
+		err = true
+	}
+	mem.tracking_allocator_clear(a)
+	return err
+}
+
 @export
 on_window_resize :: proc (vw, vh, cw, ch, cx, cy: f32) {
 	window_size  = {vw, vh}
@@ -156,12 +172,18 @@ temp_arena: mem.Arena = {data = temp_arena_buffer[:]}
 temp_arena_allocator := mem.arena_allocator(&temp_arena)
 
 @export
-start :: proc (example_kind: Example_Kind) -> (ok: bool) {
+start :: proc (example_kind: Example_Kind, is_dev: bool) -> (ok: bool) {
 	example = example_kind
 	demo := demos[example]
 
 	context.temp_allocator = temp_arena_allocator
 	defer free_all(context.temp_allocator)
+
+	if is_dev {
+		default_allocator := context.allocator
+		mem.tracking_allocator_init(&tracking_allocator, default_allocator)
+		context.allocator = mem.tracking_allocator(&tracking_allocator)
+	}
 
 	program: gl.Program
 
@@ -233,5 +255,13 @@ frame :: proc (delta: f32) {
 	case .Sol_System:   frame_sol_system  (&demo_state.sol_system,   delta)
 	case .Bezier_Curve: frame_bezier_curve(&demo_state.bezier_curve, delta)
 	case .Lathe:        frame_lathe       (&demo_state.lathe,        delta)
+	}
+}
+
+@export
+end :: proc (is_dev: bool) {
+	if is_dev {
+		reset_tracking_allocator(&tracking_allocator)
+		fmt.eprintln("Shutdown complete")
 	}
 }
